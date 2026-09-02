@@ -1,12 +1,33 @@
 <?php
-// Language strings for mod_bunkercast.
+// This file is part of Moodle - http://moodle.org/
 //
-// NOTE the filename: activity modules use lang/en/<modname>.php WITHOUT the
-// mod_ prefix, unlike every other plugin type (filter_bunkercast.php,
-// tiny_bunkercast.php). Core does the same — mod/quiz/lang/en/quiz.php. Getting
-// it wrong makes Moodle refuse to install the plugin as "defective or
-// outdated: Missing mandatory en language pack", which does not hint at the
-// filename. Strings are still fetched with get_string('x', 'mod_bunkercast').
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Language strings for mod_bunkercast.
+ *
+ * NOTE the filename: activity modules use lang/en/<modname>.php WITHOUT the
+ * mod_ prefix, unlike every other plugin type (filter_bunkercast.php,
+ * tiny_bunkercast.php). Core does the same — mod/quiz/lang/en/quiz.php. Getting
+ * it wrong makes Moodle refuse to install the plugin as "defective or
+ * outdated: Missing mandatory en language pack", which does not hint at the
+ * filename. Strings are still fetched with get_string('x', 'mod_bunkercast').
+ *
+ * @package    mod_bunkercast
+ * @copyright  2026 Bunkercast
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die();
 

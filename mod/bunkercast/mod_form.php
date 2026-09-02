@@ -1,5 +1,26 @@
 <?php
-// The add/edit form for a Bunkercast video activity.
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * The add/edit form for a Bunkercast video activity.
+ *
+ * @package    mod_bunkercast
+ * @copyright  2026 Bunkercast
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -11,7 +32,11 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
  * same job from the browser.
  */
 class mod_bunkercast_mod_form extends moodleform_mod {
-
+    /**
+     * Builds the form: a name, a description, and the video to show.
+     *
+     * @return void
+     */
     public function definition() {
         $mform = $this->_form;
 
@@ -48,8 +73,12 @@ class mod_bunkercast_mod_form extends moodleform_mod {
             $mform->addElement('hidden', 'fileid', '');
             $mform->setType('fileid', PARAM_ALPHANUMEXT);
         } else if (empty($options)) {
-            $mform->addElement('static', 'videoempty', get_string('video', 'mod_bunkercast'),
-                get_string('novideos', 'mod_bunkercast'));
+            $mform->addElement(
+                'static',
+                'videoempty',
+                get_string('video', 'mod_bunkercast'),
+                get_string('novideos', 'mod_bunkercast')
+            );
             $mform->addElement('hidden', 'fileid', '');
             $mform->setType('fileid', PARAM_ALPHANUMEXT);
         } else {
@@ -63,6 +92,13 @@ class mod_bunkercast_mod_form extends moodleform_mod {
         $this->add_action_buttons();
     }
 
+    /**
+     * Rejects a submission whose file id is not a uuid.
+     *
+     * @param array $data Submitted values.
+     * @param array $files Submitted files.
+     * @return array Field name => error message.
+     */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 

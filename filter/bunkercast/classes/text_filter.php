@@ -1,9 +1,28 @@
 <?php
-// The filter itself.
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * The filter itself.
+ *
+ * @package    filter_bunkercast
+ * @copyright  2026 Bunkercast
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace filter_bunkercast;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Replaces [bunkercast:<uuid>] with a player container.
@@ -15,11 +34,10 @@ defined('MOODLE_INTERNAL') || die();
  * served from cache to a different student.
  */
 class text_filter extends \core_filters\text_filter {
-
-    /** Matches [bunkercast:36bb40db-1a39-480f-8148-4346a76388fd] */
+    /** @var string Matches [bunkercast:36bb40db-1a39-480f-8148-4346a76388fd]. */
     const PATTERN = '/\[bunkercast:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\]/';
 
-    /** Guard against requiring the module more than once per request. */
+    /** @var bool Guard against requiring the module more than once per request. */
     protected static bool $jsrequired = false;
 
     /**
@@ -47,11 +65,19 @@ class text_filter extends \core_filters\text_filter {
         $page->requires->js_call_amd('filter_bunkercast/player', 'init');
     }
 
-    // Signature must match the parent exactly: core_filters\text_filter declares
-    // `abstract public function filter($text, array $options = [])` with no type
-    // on $text and no return type. PHP forbids narrowing an untyped parameter to
-    // `string`, so the typed signature shown in the Moodle developer docs is a
-    // fatal error at load time.
+    /**
+     * Replaces each placeholder in the text with an empty player container.
+     *
+     * The signature must match the parent exactly: core_filters\text_filter
+     * declares `abstract public function filter($text, array $options = [])`
+     * with no type on $text and no return type. PHP forbids narrowing an
+     * untyped parameter to `string`, so the typed signature shown in the Moodle
+     * developer documentation is a fatal error at load time.
+     *
+     * @param string $text Text to filter.
+     * @param array $options Filter options, unused here.
+     * @return string
+     */
     public function filter($text, array $options = []) {
         // Cheap guard first. This runs on every string Moodle outputs, so the
         // regex must not be reached unless a placeholder is actually present.

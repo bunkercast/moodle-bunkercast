@@ -1,7 +1,28 @@
-// Fetches a playback URL per viewer and swaps it into an iframe.
+// This file is part of Moodle - http://moodle.org/
 //
-// The filter deliberately emits only a file id, so nothing sensitive can end up
-// in cached HTML. This module turns that into a player at view time.
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Fetches a playback URL per viewer and swaps it into an iframe.
+ *
+ * The filter deliberately emits only a file id, so nothing sensitive can end up
+ * in cached HTML. This module turns that into a player at view time.
+ *
+ * @module     filter_bunkercast/player
+ * @copyright  2026 Bunkercast
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 import Ajax from 'core/ajax';
 import {get_string as getString} from 'core/str';

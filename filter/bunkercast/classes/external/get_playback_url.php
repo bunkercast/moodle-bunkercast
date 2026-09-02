@@ -1,5 +1,26 @@
 <?php
-// Web service: mint a playback URL for the calling user.
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * Web service: mint a playback URL for the calling user.
+ *
+ * @package    filter_bunkercast
+ * @copyright  2026 Bunkercast
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace filter_bunkercast\external;
 
@@ -8,8 +29,6 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use filter_bunkercast\api;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The authorisation boundary.
@@ -20,7 +39,11 @@ defined('MOODLE_INTERNAL') || die();
  * decision — so unenrolling a student stops the next mint with no further work.
  */
 class get_playback_url extends external_api {
-
+    /**
+     * Describes the parameters accepted by execute().
+     *
+     * @return external_function_parameters
+     */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'fileid'    => new external_value(PARAM_ALPHANUMEXT, 'Bunkercast file id (uuid)'),
@@ -28,6 +51,16 @@ class get_playback_url extends external_api {
         ]);
     }
 
+    /**
+     * Mints a short-lived playback URL for the calling user, or refuses.
+     *
+     * @param string $fileid Bunkercast file id (uuid).
+     * @param int $contextid Context the placeholder was rendered in.
+     * @return array{url: string}
+     * @throws \invalid_parameter_exception If the file id is not a uuid.
+     * @throws \required_capability_exception If the user cannot access the context.
+     * @throws \moodle_exception If Bunkercast refuses to mint.
+     */
     public static function execute(string $fileid, int $contextid): array {
         global $USER;
 
@@ -64,7 +97,7 @@ class get_playback_url extends external_api {
             return ['url' => $hit['url']];
         }
 
-        // viewerRef is the Moodle user id: opaque, stable, and within the
+        // The viewerRef is the Moodle user id: opaque, stable, and within the
         // character set Bunkercast accepts. Never send an email address.
         $minted = api::mint($fileid, (string)$USER->id);
 
@@ -73,6 +106,11 @@ class get_playback_url extends external_api {
         return ['url' => $minted['url']];
     }
 
+    /**
+     * Describes the value returned by execute().
+     *
+     * @return external_single_structure
+     */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
             'url' => new external_value(PARAM_URL, 'Player URL to load in an iframe'),
