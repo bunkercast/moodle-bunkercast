@@ -66,6 +66,7 @@ Measured on the reference install rather than assumed:
 | Web service, cache hit | **~5 ms** (no mint) |
 | DRM playback in Moodle | plays |
 | Picker | lists the account's videos live, inserts the placeholder |
+| Course backup → restore into a new course | activity restored **and mints** against its own new module context |
 | Enrolled student | mint **allowed** |
 | Unenrolled student, **cache still warm** | mint **refused** (`require_login_exception`) |
 
@@ -166,8 +167,10 @@ running Moodle. Recorded because the docs still describe them the other way.
   the account, and deleting a video in Bunkercast silently breaks another
   teacher's course. Acceptable for a single school; per-course keys via
   `filterlocalsettings.php` would be the fix.
-- **No "did they watch it" reporting**, so no completion tracking or gradebook
-  integration. That would want a `mod_bunkercast` activity type.
+- **No "did they watch it" reporting.** Moodle can record that a student opened
+  the activity (`FEATURE_COMPLETION_TRACKS_VIEWS`), which is the honest limit of
+  what a third-party embed can report — real watch time would need the player to
+  send heartbeats back. No gradebook integration.
 
 ## Releasing
 

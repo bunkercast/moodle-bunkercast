@@ -195,10 +195,13 @@ catches most first-time installs.
 
 ## Known limits, plainly
 
-**Course backup and restore is not supported yet.** Duplicating or rolling over
-a course produces the activity **without its video**, and Moodle will not warn
-you. Re-select the video afterwards. Fix this before using it for anything you
-depend on.
+**Restoring into a Moodle connected to a different Bunkercast account will not
+play.** Course backup and restore work, and the video reference travels with the
+course — but it refers to a video in *your* Bunkercast account. Restore that
+course onto a site using a different account and the activity will say the video
+is unavailable, because Bunkercast will not issue a credential for a video that
+account does not own. That is deliberate: a backup file must not be a way to
+inherit someone else's video.
 
 **The mobile app is untested.** We do not yet know whether DRM playback works in
 the Moodle app's browser view. Test it yourself before promising it to students,

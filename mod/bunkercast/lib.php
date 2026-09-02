@@ -14,9 +14,7 @@ function bunkercast_supports($feature) {
         case FEATURE_SHOW_DESCRIPTION:
             return true;
         case FEATURE_BACKUP_MOODLE2:
-            // Deliberately false until backup/ is written. Claiming support
-            // without it would let a course duplicate silently drop the video.
-            return false;
+            return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             // "Student must view this activity to complete it" — the honest
             // limit of what we can report. Real watch-time would need the
