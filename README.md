@@ -169,6 +169,27 @@ running Moodle. Recorded because the docs still describe them the other way.
 - **No "did they watch it" reporting**, so no completion tracking or gradebook
   integration. That would want a `mod_bunkercast` activity type.
 
+## Releasing
+
+Moodle installs **one plugin per ZIP**, and the directory inside must be named
+after the plugin's short name — `bunkercast`, not `filter_bunkercast` — because
+that is the folder Moodle creates. Get it wrong and the install fails with
+`componentmismatchname`.
+
+```
+git archive --prefix=bunkercast/ -o filter_bunkercast.zip HEAD:filter/bunkercast
+git archive --prefix=bunkercast/ -o mod_bunkercast.zip    HEAD:mod/bunkercast
+git archive --prefix=bunkercast/ -o tiny_bunkercast.zip   HEAD:lib/editor/tiny/plugins/bunkercast
+```
+
+All three verified against `\core\update\validator` — Moodle's own installer
+validator — on 4.5.13: **PASS**, `rootdir=bunkercast`. A control ZIP built with
+`--prefix=filter_bunkercast/` was correctly **rejected**, so the check was
+meaningful rather than the validator simply being lenient.
+
+`amd/build/` must be in the archive, which is why it is committed. Rebuild it
+before tagging if `amd/src` has changed.
+
 ## Layout
 
 ```
