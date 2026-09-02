@@ -3,7 +3,9 @@
 DRM-protected video in Moodle, with playback granted per viewer by Moodle's own
 enrolment rules rather than by a link anyone can forward.
 
-**Status: alpha, not yet installed into a Moodle.** Nothing here has run.
+**Status: working end to end**, verified on Moodle 4.5.13 / PHP 8.2 / PostgreSQL 17
+(2026-09-02). Playback, per-viewer minting, caching and the authoring picker all
+confirmed against a real Bunkercast account. Still alpha: see *Known gaps*.
 
 ## What it does
 
@@ -52,6 +54,32 @@ URL for its own lifetime. That turns the above into roughly one request per
 student per video per lesson. The user id is in the key deliberately: a token
 belongs to one viewer and must never be handed to another.
 
+## Verified behaviour
+
+Measured on the reference install rather than assumed:
+
+| | |
+|---|---|
+| Both plugins register | version `2026090200` each |
+| Filter output | container with `data-fileid` only — **no credential in the HTML** |
+| Web service, cache miss | ~526 ms (mints against Bunkercast) |
+| Web service, cache hit | **~5 ms** (no mint) |
+| DRM playback in Moodle | plays |
+| Picker | lists the account's videos live, inserts the placeholder |
+
+## Developing on this
+
+`requirejs.php` serves **all** AMD modules as a single ~3.3 MB response keyed by
+`jsrev`. So any JavaScript change needs three steps:
+
+1. rebuild — `npx grunt amd --root=<plugin dir>`
+2. `php admin/cli/purge_caches.php` (bumps `jsrev`)
+3. a **hard** reload in the browser
+
+Skipping any one of them reproduces a symptom that looks exactly like a code
+defect. Two false trails during initial development came from this, plus one
+from an `rsync --delete` that quietly removed `amd/build/`.
+
 ## Installing
 
 Requires **Moodle 4.5+** — that is where filter classes moved to
@@ -78,14 +106,36 @@ mint and list endpoints. Check the balance and plan in Bunkercast before a
 lesson: if the account runs dry mid-class, every student in the room sees the
 video fail at once.
 
+## Gotchas the Moodle docs get wrong
+
+Every one of these is a fatal or silent failure, and none is findable without a
+running Moodle. Recorded because the docs still describe them the other way.
+
+- **`filter()` signature.** The docs show `filter(string $text, ...)`. The parent
+  declares `abstract public function filter($text, array $options = [])` —
+  untyped. PHP forbids narrowing an untyped parameter, so the documented form is
+  a **fatal error at class load**.
+- **JS must be required from `setup()`, not `filter()`.** `core_filters\text_filter`
+  provides `setup($page, $context)` for page requirements; every core filter
+  needing JS uses it.
+- **`new Promise(async (resolve) => ...)`** for a TinyMCE entry point, as the docs
+  show, **fails Moodle's own ESLint** (`no-async-promise-executor`).
+- **`addMenubarItemToPosition` does not exist.** It is `addMenubarItem`. A missing
+  named export is `undefined`, and calling it throws inside `configure()` — which
+  **takes the entire editor down**, leaving a plain textarea. The symptom looks
+  nothing like a plugin fault.
+- **`addToolbarButton` silently drops the button** when no section name matches,
+  and `'content'` is not a default section (`history, formatting, view, alignment,
+  indentation, lists, comments`). Create it first.
+- **`simplekeys` cache definitions reject hyphens** — a uuid key throws a
+  `coding_exception`. Strip them.
+
 ## Known gaps
 
 - **The Moodle mobile app is untested.** Two things need proving: that DRM plays
   in the app's webview at all, and that the app sends a referrer. It generally
   does not, which is why **Restrict playback to this site is off by default** —
   turning it on will likely stop app users watching.
-- **No authoring UI yet.** The placeholder is typed by hand. A TinyMCE plugin
-  (`tiny_bunkercast`) with a library picker is the next piece.
 - **One API key per site**, so every teacher sees and can embed every video in
   the account, and deleting a video in Bunkercast silently breaks another
   teacher's course. Acceptable for a single school; per-course keys via
