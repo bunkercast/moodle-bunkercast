@@ -5,7 +5,8 @@ enrolment rules rather than by a link anyone can forward.
 
 **Status: working end to end**, verified on Moodle 4.5.13 / PHP 8.2 / PostgreSQL 17
 (2026-09-02). Playback, per-viewer minting, caching and the authoring picker all
-confirmed against a real Bunkercast account. Still alpha: see *Known gaps*.
+confirmed against a real Bunkercast account. Coding standards, PHPUnit and
+ESLint all clean — see *Code checks*. Still alpha: see *Known gaps*.
 
 ## What it does
 
@@ -60,7 +61,7 @@ Measured on the reference install rather than assumed:
 
 | | |
 |---|---|
-| Both plugins register | version `2026090200` each |
+| All three plugins register | version `2026090200` each |
 | Filter output | container with `data-fileid` only — **no credential in the HTML** |
 | Web service, cache miss | ~526 ms (mints against Bunkercast) |
 | Web service, cache hit | **~5 ms** (no mint) |
@@ -89,6 +90,49 @@ Skipping any one of them reproduces a symptom that looks exactly like a code
 defect. Two false trails during initial development came from this, plus one
 from an `rsync --delete` that quietly removed `amd/build/`.
 
+Purge **after** rebuilding, never before — purging first just re-caches the
+stale module.
+
+## Code checks
+
+The same three gates the plugin directory runs. All currently pass.
+
+**PHP coding style** — `moodlehq/moodle-cs`, the standard behind the "Moodle
+Code Checker". Needs no Moodle install:
+
+```
+composer require --dev moodlehq/moodle-cs
+vendor/bin/phpcs --standard=moodle --extensions=php \
+    filter/bunkercast mod/bunkercast lib/editor/tiny/plugins/bunkercast
+```
+
+34 files, zero errors, zero warnings.
+
+**PHPUnit** — run from a Moodle install with the plugins in place, after
+`composer install` and `php admin/tool/phpunit/cli/init.php` in the Moodle root:
+
+```
+vendor/bin/phpunit --filter "filter_bunkercast|mod_bunkercast|tiny_bunkercast"
+```
+
+77 tests: 43 of ours plus 34 core plugin checks that run against any installed
+plugin. It was one of those core checks — `core_privacy`'s
+`test_all_providers_compliant` — that caught our privacy provider declaring the
+external transmission without implementing a request provider, so run the whole
+filter rather than just `tests/`.
+
+**JavaScript** — ESLint and the rollup build, via Moodle's grunt. Needs Node 22
+(`lts/jod`, per Moodle's `.nvmrc`) and `npm install` in the Moodle root:
+
+```
+npx grunt amd --root=filter/bunkercast
+npx grunt amd --root=lib/editor/tiny/plugins/bunkercast
+```
+
+`grunt amd` is lint *and* build in one task, so it regenerates `amd/build/`.
+Commit the result: the source maps embed `sourcesContent`, so even a
+comment-only change to `amd/src` makes the committed output stale.
+
 ## Installing
 
 Requires **Moodle 4.5+** — that is where filter classes moved to
@@ -96,26 +140,27 @@ Requires **Moodle 4.5+** — that is where filter classes moved to
 instead; the documented approach is to keep the implementation where it is and
 add a `class_alias()` shim in the old location. Not done yet.
 
-Two plugins, and they go to different places — the picker lives inside the core
-tree, which is where Moodle puts all `tiny_` plugins:
+Three plugins, and they go to different places — the picker lives inside the
+core tree, which is where Moodle puts all `tiny_` plugins:
 
 ```
 filter/bunkercast                        ->  <moodle>/filter/bunkercast
+mod/bunkercast                           ->  <moodle>/mod/bunkercast
 lib/editor/tiny/plugins/bunkercast       ->  <moodle>/lib/editor/tiny/plugins/bunkercast
 ```
 
-1. Copy both directories into place.
+Only the filter is required. The activity and the picker both depend on it and
+are useless without it; either can be left out.
+
+1. Copy the directories into place.
 2. Site administration → Notifications, to complete installation.
-3. Build the JavaScript — `amd/build/` is generated and not committed:
-   ```
-   npx grunt amd --root=filter/bunkercast
-   npx grunt amd --root=lib/editor/tiny/plugins/bunkercast
-   ```
-   Needs Node 22 (`lts/jod`, per Moodle's `.nvmrc`) and `npm install` in the
-   Moodle root.
-4. Enable the filter: Site administration → Plugins → Filters → Manage filters.
-5. Configure it: Plugins → Filters → Bunkercast DRM video — paste the API key
+3. Enable the filter: Site administration → Plugins → Filters → Manage filters.
+4. Configure it: Plugins → Filters → Bunkercast DRM video — paste the API key
    from Bunkercast (Account → Settings; shown once).
+
+No build step: `amd/build/` is committed, because a Moodle administrator has no
+Node or grunt and the player JS would never load without it. Rebuild only if you
+change `amd/src` — see *Code checks* below.
 
 The picker needs no configuration. It hides itself unless an API key is set and
 the user holds `filter/bunkercast:browselibrary` (editing teachers and managers
@@ -219,7 +264,23 @@ filter/bunkercast/                          the renderer — all security logic
 ├── classes/privacy/provider.php            declares the external transmission
 ├── classes/external/get_playback_url.php   authorisation + mint + cache
 ├── classes/external/get_videos.php         capability-gated library listing
-└── amd/src/player.js                       fetches the URL, builds the iframe
+├── amd/src/player.js                       fetches the URL, builds the iframe
+├── amd/build/                              committed — installs have no grunt
+└── tests/                                  filter, cache and both web services
+
+mod/bunkercast/                             the activity in the chooser
+├── version.php                             depends on filter_bunkercast
+├── lib.php                                 supports() + instance CRUD
+├── mod_form.php                            server-side video select, no JS
+├── view.php                                emits the same container as the filter
+├── index.php                               per-course listing
+├── db/install.xml                          one row per activity: the fileid only
+├── db/access.php                           mod/bunkercast:view, :addinstance
+├── classes/event/course_module_viewed.php  core's class is abstract
+├── classes/privacy/provider.php            null_provider — stores no personal data
+├── pix/monologo.svg                        without it the chooser shows no icon
+├── backup/moodle2/                         task + stepslib, backup and restore
+└── tests/                                  callbacks + a module generator
 
 lib/editor/tiny/plugins/bunkercast/         the picker — authoring convenience only
 ├── version.php                             depends on filter_bunkercast
@@ -230,5 +291,10 @@ lib/editor/tiny/plugins/bunkercast/         the picker — authoring convenience
 ```
 
 The split matters: **everything that governs access lives in the filter.** The
-picker only writes a placeholder a teacher could type by hand, so removing it
-changes nothing about how videos are protected.
+picker only writes a placeholder a teacher could type by hand, and the activity
+emits the same container the filter does and calls the same web service — so
+removing either changes nothing about how videos are protected.
+
+## Licence
+
+GPL v3 or later, as required for Moodle plugins. See `LICENSE`.
