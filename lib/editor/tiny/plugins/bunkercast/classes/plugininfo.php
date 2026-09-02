@@ -6,19 +6,20 @@ namespace tiny_bunkercast;
 use context;
 use editor_tiny\plugin;
 use editor_tiny\plugin_with_buttons;
-use editor_tiny\plugin_with_configuration;
 use editor_tiny\plugin_with_menuitems;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Registers the toolbar button and menu item, and tells the JS which context
- * it is editing in — the picker needs that to call the web service.
+ * Registers the toolbar button and menu item.
+ *
+ * The context id is deliberately not supplied here: editor_tiny/options already
+ * exports getContextId(editor) to every plugin, so a plugin_with_configuration
+ * implementation returning it was redundant.
  */
 class plugininfo extends plugin implements
         plugin_with_buttons,
-        plugin_with_menuitems,
-        plugin_with_configuration {
+        plugin_with_menuitems {
 
     public static function get_available_buttons(): array {
         return ['tiny_bunkercast/bunkercast'];
@@ -48,14 +49,4 @@ class plugininfo extends plugin implements
         return has_capability('filter/bunkercast:browselibrary', $context);
     }
 
-    public static function get_plugin_configuration_for_context(
-        context $context,
-        array $options,
-        array $fpoptions,
-        ?\editor_tiny\editor $editor = null
-    ): array {
-        return [
-            'contextid' => $context->id,
-        ];
-    }
 }
