@@ -51,7 +51,13 @@ class get_playback_url extends external_api {
         self::validate_context($context);
 
         $cache = \cache::make('filter_bunkercast', 'playbackurl');
-        $key = $USER->id . '_' . $fileid;
+
+        // The definition uses simplekeys, which Moodle restricts to
+        // [a-zA-Z0-9_] — so the uuid's hyphens have to go or cache::get()
+        // throws a coding_exception. Stripping them is lossless: 32 hex
+        // characters are still unique, and simple keys avoid the hashing
+        // overhead of the general case.
+        $key = $USER->id . '_' . str_replace('-', '', $fileid);
 
         $hit = $cache->get($key);
         if (is_array($hit) && !empty($hit['url']) && ($hit['expires'] ?? 0) > time()) {
