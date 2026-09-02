@@ -87,12 +87,30 @@ Requires **Moodle 4.5+** — that is where filter classes moved to
 instead; the documented approach is to keep the implementation where it is and
 add a `class_alias()` shim in the old location. Not done yet.
 
-1. Copy `filter/bunkercast` into your Moodle's `filter/` directory.
-2. Visit Site administration → Notifications to complete installation.
-3. Build the JavaScript: `npx grunt amd` from your Moodle root (needs a Moodle
-   development checkout — `amd/build/` is generated and is not committed here).
+Two plugins, and they go to different places — the picker lives inside the core
+tree, which is where Moodle puts all `tiny_` plugins:
+
+```
+filter/bunkercast                        ->  <moodle>/filter/bunkercast
+lib/editor/tiny/plugins/bunkercast       ->  <moodle>/lib/editor/tiny/plugins/bunkercast
+```
+
+1. Copy both directories into place.
+2. Site administration → Notifications, to complete installation.
+3. Build the JavaScript — `amd/build/` is generated and not committed:
+   ```
+   npx grunt amd --root=filter/bunkercast
+   npx grunt amd --root=lib/editor/tiny/plugins/bunkercast
+   ```
+   Needs Node 22 (`lts/jod`, per Moodle's `.nvmrc`) and `npm install` in the
+   Moodle root.
 4. Enable the filter: Site administration → Plugins → Filters → Manage filters.
-5. Configure it: add the API key from Bunkercast (Account → Settings).
+5. Configure it: Plugins → Filters → Bunkercast DRM video — paste the API key
+   from Bunkercast (Account → Settings; shown once).
+
+The picker needs no configuration. It hides itself unless an API key is set and
+the user holds `filter/bunkercast:browselibrary` (editing teachers and managers
+by default), so it never shows a button that would only fail.
 
 ## Choosing a plan
 
@@ -146,14 +164,29 @@ running Moodle. Recorded because the docs still describe them the other way.
 ## Layout
 
 ```
-filter/bunkercast/
-├── version.php                          plain data, no side effects
-├── settings.php                         API key, base URL, ttl, host lock
-├── db/services.php                      the AJAX web service
-├── db/caches.php                        per-user minted-URL cache
-├── lang/en/filter_bunkercast.php        strings (must define pluginname)
-├── classes/text_filter.php              placeholder → container
-├── classes/api.php                      Bunkercast HTTP client (server-side only)
-├── classes/external/get_playback_url.php authorisation + mint + cache
-└── amd/src/player.js                    fetches the URL, builds the iframe
+filter/bunkercast/                          the renderer — all security logic
+├── version.php                             plain data, no side effects
+├── settings.php                            API key, base URL, ttl, host lock
+├── styles.css
+├── db/services.php                         two AJAX web services
+├── db/caches.php                           per-user minted-URL cache
+├── db/access.php                           filter/bunkercast:browselibrary
+├── lang/en/filter_bunkercast.php           strings (must define pluginname)
+├── classes/text_filter.php                 placeholder → container; setup() loads the JS
+├── classes/api.php                         Bunkercast HTTP client (server-side only)
+├── classes/privacy/provider.php            declares the external transmission
+├── classes/external/get_playback_url.php   authorisation + mint + cache
+├── classes/external/get_videos.php         capability-gated library listing
+└── amd/src/player.js                       fetches the URL, builds the iframe
+
+lib/editor/tiny/plugins/bunkercast/         the picker — authoring convenience only
+├── version.php                             depends on filter_bunkercast
+├── lang/en/tiny_bunkercast.php
+├── classes/plugininfo.php                  button/menu registration; hides itself
+├── classes/privacy/provider.php            null_provider — stores nothing
+└── amd/src/{common,plugin,commands,configuration}.js
 ```
+
+The split matters: **everything that governs access lives in the filter.** The
+picker only writes a placeholder a teacher could type by hand, so removing it
+changes nothing about how videos are protected.
