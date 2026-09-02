@@ -66,6 +66,14 @@ Measured on the reference install rather than assumed:
 | Web service, cache hit | **~5 ms** (no mint) |
 | DRM playback in Moodle | plays |
 | Picker | lists the account's videos live, inserts the placeholder |
+| Enrolled student | mint **allowed** |
+| Unenrolled student, **cache still warm** | mint **refused** (`require_login_exception`) |
+
+That last row is the one that matters. The cache still held a valid minted URL
+for that student and they were refused anyway, because `validate_context()` runs
+**before** the cache lookup in `get_playback_url::execute()`. Reverse those two
+and an unenrolled student keeps watching until the token expires — up to an hour
+at the default TTL, silently. The order is load-bearing, not incidental.
 
 ## Developing on this
 
