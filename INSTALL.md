@@ -203,10 +203,15 @@ is unavailable, because Bunkercast will not issue a credential for a video that
 account does not own. That is deliberate: a backup file must not be a way to
 inherit someone else's video.
 
-**The mobile app is untested.** We do not yet know whether DRM playback works in
-the Moodle app's browser view. Test it yourself before promising it to students,
-and leave *Restrict playback to this site* off — it would very likely break the
-app.
+**The Moodle mobile app is not supported yet.** Videos play fine in a mobile
+*browser* — Safari on iOS hands over to the native player, which is normal and
+works. But the app renders course content in its own way and cannot yet display
+these activities; it will offer to open them in a browser instead, where they
+work. App support is planned.
+
+Leave *Restrict playback to this site* **off** if your students use the app or a
+browser inside it — the check needs a referrer that those contexts often do not
+send.
 
 **One Bunkercast account per Moodle site.** Every teacher who can add a video
 sees the whole account's library, and deleting a video in Bunkercast will break

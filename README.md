@@ -159,10 +159,20 @@ running Moodle. Recorded because the docs still describe them the other way.
 
 ## Known gaps
 
-- **The Moodle mobile app is untested.** Two things need proving: that DRM plays
-  in the app's webview at all, and that the app sends a referrer. It generally
-  does not, which is why **Restrict playback to this site is off by default** —
-  turning it on will likely stop app users watching.
+- **No Moodle App support.** DRM playback in a webview is fine (iOS hands off to
+  the native player, which still plays), so this is a packaging problem rather
+  than a feasibility one. The app has no RequireJS, so nothing can ever fill the
+  container the filter emits — the JS is delivered by `$PAGE->requires`, which
+  only exists in a web page render, not a web service response. Support needs
+  `db/mobile.php` plus an external function returning **an already-minted
+  iframe**. That is acceptable here where it was not for the filter: the web
+  service call is authenticated as that student, so the credential returned is
+  their own, and the app caching it offline is no worse than their browser
+  holding it.
+  Two knock-ons: `hostlock` must stay off (the app generally sends no referrer),
+  and on iOS the native-player handoff may stop the page's watch-minute
+  heartbeats — which affects `view_minutes` analytics only, since pay-as-you-go
+  billing is driven by licence renewals.
 - **One API key per site**, so every teacher sees and can embed every video in
   the account, and deleting a video in Bunkercast silently breaks another
   teacher's course. Acceptable for a single school; per-course keys via
