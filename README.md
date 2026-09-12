@@ -9,12 +9,12 @@ confirmed against a real Bunkercast account. Coding standards, PHPUnit and
 ESLint all clean — see *Code checks*. Beta: see *Known gaps*.
 
 > **Requires a Bunkercast account.** These plugins are a client, not a video
-> platform. Encoding, DRM licensing and delivery happen at
-> [bunkercast.com](https://bunkercast.com), which is a **paid service billed by
-> the minute** — the plugins do nothing without an API key from it, and playback
-> stops when the account balance runs out. There is a free allowance to try it
-> with. Moodle decides *who* may watch; Bunkercast does the protecting and
-> serving.
+> platform — encoding, DRM licensing and delivery happen at
+> [bunkercast.com](https://bunkercast.com). The account is **free to create and
+> includes 60 minutes**, which is enough to set this up and try it properly; past
+> that you top up with minutes as you need them. The plugins do nothing without
+> an API key, and playback stops if the account runs out of minutes. Moodle
+> decides *who* may watch; Bunkercast does the protecting and serving.
 
 ## What it does
 
