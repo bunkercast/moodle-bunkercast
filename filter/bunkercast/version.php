@@ -36,5 +36,5 @@ $plugin->version   = 2026090200;
 // a class_alias shim in the old location — see README.
 $plugin->requires  = 2024100700;
 
-$plugin->maturity  = MATURITY_ALPHA;
+$plugin->maturity  = MATURITY_BETA;
 $plugin->release   = '0.1.0';
