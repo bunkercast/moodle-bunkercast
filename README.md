@@ -6,7 +6,15 @@ enrolment rules rather than by a link anyone can forward.
 **Status: working end to end**, verified on Moodle 4.5.13 / PHP 8.2 / PostgreSQL 17
 (2026-09-02). Playback, per-viewer minting, caching and the authoring picker all
 confirmed against a real Bunkercast account. Coding standards, PHPUnit and
-ESLint all clean — see *Code checks*. Still alpha: see *Known gaps*.
+ESLint all clean — see *Code checks*. Beta: see *Known gaps*.
+
+> **Requires a Bunkercast account.** These plugins are a client, not a video
+> platform. Encoding, DRM licensing and delivery happen at
+> [bunkercast.com](https://bunkercast.com), which is a **paid service billed by
+> the minute** — the plugins do nothing without an API key from it, and playback
+> stops when the account balance runs out. There is a free allowance to try it
+> with. Moodle decides *who* may watch; Bunkercast does the protecting and
+> serving.
 
 ## What it does
 
