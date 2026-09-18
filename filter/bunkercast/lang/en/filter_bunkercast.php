@@ -43,6 +43,9 @@ $string['hostlock_desc'] = 'Ask Bunkercast to refuse playback unless the player 
 $string['planhint'] = 'Choosing a plan';
 $string['planhint_desc'] = 'Pay-as-you-go is billed per minute watched, which is the cheapest way to evaluate this plugin. For real classroom use the Professional plan is normally the right fit: a lecture watched by a whole class consumes minutes quickly (30 students × 45 minutes is 1,350 minutes), and Professional replaces per-minute billing with a flat monthly fee. Check your balance and plan in Bunkercast before a lesson — this plugin cannot top up your account.';
 
+// Cache.
+$string['cachedef_playbackurl'] = 'Minted playback URLs per viewer';
+
 // Player.
 $string['loading'] = 'Loading video…';
 $string['unavailable'] = 'This video is currently unavailable.';
