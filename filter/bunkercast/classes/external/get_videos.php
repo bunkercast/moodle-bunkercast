@@ -30,6 +30,7 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use filter_bunkercast\api;
+use filter_bunkercast\embed;
 
 /**
  * Proxies GET /api/videos so the API key stays on the server.
@@ -66,6 +67,15 @@ class get_videos extends external_api {
         $context = \context::instance_by_id($contextid);
         self::validate_context($context);
         require_capability('filter/bunkercast:browselibrary', $context);
+
+        // Not a security fix — the capability above is, and the library returned is
+        // the whole account's regardless of context. This keeps the picker's
+        // visibility rule identical to where a video can actually be authorised
+        // (embed::may_host), so the button is never offered somewhere that would
+        // refuse on submit.
+        if (!embed::may_host($context)) {
+            throw new \moodle_exception('cannotembedhere', 'filter_bunkercast');
+        }
 
         return ['videos' => api::list_videos()];
     }

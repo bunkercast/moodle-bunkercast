@@ -65,13 +65,48 @@ final class get_playback_url_test extends \advanced_testcase {
     }
 
     /**
-     * An enrolled student passes the access check.
+     * An enrolled student passes BOTH checks once the video is authorised.
      *
-     * Proven by how far execution gets: past validate_context() and into
-     * api::mint(), which then fails on the unconfigured API key. Reaching
-     * 'notconfigured' means authorisation succeeded.
+     * Proven by how far execution gets: past validate_context(), past the
+     * authorisation check, and into api::mint(), which then fails on the
+     * unconfigured API key. Reaching 'notconfigured' means both checks passed.
+     *
+     * Being enrolled is no longer sufficient on its own — see the companion test
+     * below. That is the point of the change: access says who may see the PLACE,
+     * the authorisation says whether the VIDEO belongs there.
      */
-    public function test_enrolled_student_passes_the_access_check(): void {
+    public function test_enrolled_student_passes_both_checks_once_authorised(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = \context_course::instance($course->id);
+        \filter_bunkercast\embed::grant(self::FILEID, $coursecontext);
+
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->setUser($student);
+
+        try {
+            get_playback_url::execute(self::FILEID, $coursecontext->id);
+            $this->fail('Expected the missing API key to stop this, not either check');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('notconfigured', $e->errorcode);
+        }
+    }
+
+    /**
+     * Enrolment alone does not get a video that was never authorised here.
+     *
+     * The companion to the test above, and the finding this whole check exists
+     * for: without it, reaching a context proved nothing about the video, and for
+     * the system context that reduced to being logged in at all.
+     *
+     * A student gets the plain 'unavailable' wording rather than the repair
+     * instructions — those are useless to someone who cannot authorise anything,
+     * and pointing a student at a teacher to authorise a video the student chose
+     * is the route this check closes.
+     */
+    public function test_enrolment_alone_does_not_authorise_a_video(): void {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
@@ -81,9 +116,9 @@ final class get_playback_url_test extends \advanced_testcase {
 
         try {
             get_playback_url::execute(self::FILEID, \context_course::instance($course->id)->id);
-            $this->fail('Expected the missing API key to stop this, not the access check');
+            $this->fail('An unauthorised video must not reach api::mint()');
         } catch (\moodle_exception $e) {
-            $this->assertSame('notconfigured', $e->errorcode);
+            $this->assertSame('unavailable', $e->errorcode);
         }
     }
 

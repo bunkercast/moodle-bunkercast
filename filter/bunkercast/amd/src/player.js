@@ -60,11 +60,17 @@ const load = async (node) => {
 
         node.replaceChildren(frame);
     } catch (e) {
-        // A failure here is usually an empty balance or an unconfigured key —
-        // both are the site's problem, not the viewer's, so say little.
+        // Most failures are the site's problem, not the viewer's — an empty
+        // balance, an unconfigured key — so say little.
+        //
+        // One exception. An unauthorised video is repairable BY THE PERSON LOOKING
+        // AT IT, so it gets its own message naming the fix. Without this branch
+        // every failure reads "unavailable" and a teacher whose pasted placeholder
+        // was never authorised goes looking at their balance and their API key.
+        const key = (e && e.errorcode === 'notembeddedhere') ? 'notembeddedhere' : 'unavailable';
         const message = document.createElement('div');
         message.className = 'bunkercast-video-error text-muted';
-        message.textContent = await getString('unavailable', 'filter_bunkercast');
+        message.textContent = await getString(key, 'filter_bunkercast');
         node.replaceChildren(message);
         window.console.warn('filter_bunkercast: could not load video', e);
     }

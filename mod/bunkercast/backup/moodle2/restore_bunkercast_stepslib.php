@@ -62,6 +62,15 @@ class restore_bunkercast_activity_structure_step extends restore_activity_struct
         // between sites.
         $newitemid = $DB->insert_record('bunkercast', $data);
 
+        // Restore and course import both reach this method and neither calls
+        // bunkercast_add_instance(), so the video would arrive unauthorised in the
+        // destination course and refuse to play. grant() skips the filter
+        // capability check on purpose: the restoring user holds moodle/restore:*,
+        // not necessarily filter/bunkercast:browselibrary, and failing half way
+        // through a restore is a far worse outcome than authorising a video whose
+        // activity is being restored regardless.
+        \filter_bunkercast\embed::grant($data->fileid, context_course::instance($data->course));
+
         $this->apply_activity_instance($newitemid);
     }
 

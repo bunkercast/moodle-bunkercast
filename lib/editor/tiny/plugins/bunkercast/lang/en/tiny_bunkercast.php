@@ -38,5 +38,6 @@ $string['cancel'] = 'Cancel';
 $string['loading'] = 'Loading your library…';
 $string['novideos'] = 'No encoded videos found in this Bunkercast account. Upload and encode a video in Bunkercast, then reopen this dialog.';
 $string['loadfailed'] = 'Could not load your Bunkercast library. A site administrator may need to check the API key in the Bunkercast filter settings.';
+$string['registerfailed'] = 'This video could not be authorised for use here, so it was not inserted. Bunkercast videos can only be used inside a course.';
 
 $string['privacy:metadata'] = 'The Bunkercast video picker stores no personal data. It lists videos from the site\'s Bunkercast account and inserts a placeholder into the content being edited.';

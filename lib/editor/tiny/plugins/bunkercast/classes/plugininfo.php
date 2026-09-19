@@ -60,9 +60,17 @@ class plugininfo extends plugin implements
     /**
      * Hide the button entirely unless it would work.
      *
-     * Two reasons it might not: the site has no API key configured, or this
-     * user cannot browse the library. Showing a button that always errors is
-     * worse than showing none.
+     * Three reasons it might not: the site has no API key configured, this user
+     * cannot browse the library, or this is not somewhere a Bunkercast video can
+     * be used at all. Showing a button that always errors is worse than showing
+     * none.
+     *
+     * The third check is not redundant with the capability. The editor takes its
+     * context from $PAGE, so a category manager editing a category-level question
+     * bank, or an admin editing the front-page summary, genuinely holds the
+     * capability there — and inserting would then fail on submit. Moodle does not
+     * enforce a capability's declared contextlevel, so this mirrors the rule the
+     * filter's own web service applies.
      */
     public static function is_enabled(
         context $context,
@@ -71,6 +79,10 @@ class plugininfo extends plugin implements
         ?\editor_tiny\editor $editor = null
     ): bool {
         if (trim((string)get_config('filter_bunkercast', 'apikey')) === '') {
+            return false;
+        }
+
+        if (!\filter_bunkercast\embed::may_host($context)) {
             return false;
         }
 

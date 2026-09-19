@@ -41,4 +41,16 @@ $functions = [
         'loginrequired' => true,
         'capabilities'  => 'filter/bunkercast:browselibrary',
     ],
+
+    // Leaving loginrequired at its default true is what makes
+    // external_api::call_external_function() require a sesskey, so this write is
+    // CSRF-protected without doing anything here. Do not set it to false.
+    'filter_bunkercast_register_embed' => [
+        'classname'     => 'filter_bunkercast\external\register_embed',
+        'description'   => 'Authorise a Bunkercast video for use in a course or activity.',
+        'type'          => 'write',
+        'ajax'          => true,
+        'loginrequired' => true,
+        'capabilities'  => 'filter/bunkercast:browselibrary',
+    ],
 ];

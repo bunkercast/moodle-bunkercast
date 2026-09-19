@@ -110,14 +110,29 @@ Use this when the video belongs *within* something else, next to your own text.
 
 ### By hand — no plugins beyond the filter
 
-Type the reference yourself, anywhere the editor works:
+Two steps, because a video plays in a course only after it has been authorised
+for that course. The editor button and the activity do this for you; by hand you
+do it yourself.
 
-```
-[bunkercast:36bb40db-1a39-480f-8148-4346a76388fd]
-```
+1. In the course, go to **Course administration → Authorise Bunkercast videos**,
+   pick the video by name, and press **Authorise**.
+2. Type the reference wherever you want it, anywhere the editor works:
+
+   ```
+   [bunkercast:36bb40db-1a39-480f-8148-4346a76388fd]
+   ```
 
 The id comes from **Bunkercast → Studio**. This is the fallback if you only
 installed the filter.
+
+If you skip step 1, the player says the video has not been authorised for use
+here and names the page above — you can do it then and reload. Authorising once
+covers the whole course, so you only do it again for a video you have not used
+there before.
+
+**Copying content between courses.** An authorisation belongs to one course. If
+you duplicate or import a page that holds a reference, authorise the video in the
+destination course too.
 
 ---
 

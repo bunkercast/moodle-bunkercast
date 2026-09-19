@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="filter/bunkercast/db" VERSION="20260919" COMMENT="Bunkercast DRM video filter"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="filter_bunkercast_embed" COMMENT="Videos authorised for playback in a course or activity. One row per (context, video). Holds no user data and no playback credential: it records that somebody who could publish in that place chose that video.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course or activity context the video is authorised in"/>
+        <FIELD NAME="fileid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" COMMENT="Bunkercast file id (uuid)"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="contextid" TYPE="foreign" FIELDS="contextid" REFTABLE="context" REFFIELDS="id"/>
+        <KEY NAME="contextidfileid" TYPE="unique" FIELDS="contextid, fileid" COMMENT="Authorising twice is a no-op, not a duplicate row"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

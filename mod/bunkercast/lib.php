@@ -66,7 +66,40 @@ function bunkercast_add_instance($data, $mform = null) {
     $data->timecreated = time();
     $data->timemodified = $data->timecreated;
 
-    return $DB->insert_record('bunkercast', $data);
+    $id = $DB->insert_record('bunkercast', $data);
+
+    bunkercast_authorise_video($data);
+
+    return $id;
+}
+
+/**
+ * Authorises the chosen video for the course this activity belongs to.
+ *
+ * filter_bunkercast refuses to mint a playback link unless the video has been
+ * authorised where it is being shown, so without this the activity would save
+ * cleanly and then fail to play.
+ *
+ * Authorises at the COURSE context, not this activity's own: the course grant
+ * already covers every activity inside it, it is the same grant the filter's
+ * authorise page makes, and it avoids depending on when the module context comes
+ * into existence relative to this function. Access control is unaffected — the
+ * viewer is still checked against the activity's own context at playback, so
+ * group restrictions and availability conditions apply exactly as before.
+ *
+ * Uses grant() rather than register() deliberately: mod/bunkercast:addinstance
+ * has already been enforced, and a filter capability failure here would block
+ * saving an activity the user was entitled to create.
+ *
+ * @param stdClass $data Submitted values from mod_form; needs fileid and course.
+ * @return void
+ */
+function bunkercast_authorise_video($data) {
+    if (empty($data->fileid) || empty($data->course)) {
+        return;
+    }
+
+    \filter_bunkercast\embed::grant($data->fileid, context_course::instance($data->course));
 }
 
 /**
@@ -81,6 +114,8 @@ function bunkercast_update_instance($data, $mform = null) {
 
     $data->id = $data->instance;
     $data->timemodified = time();
+
+    bunkercast_authorise_video($data);
 
     return $DB->update_record('bunkercast', $data);
 }

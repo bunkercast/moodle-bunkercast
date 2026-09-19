@@ -29,6 +29,7 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use filter_bunkercast\api;
+use filter_bunkercast\embed;
 
 /**
  * The authorisation boundary.
@@ -72,16 +73,34 @@ class get_playback_url extends external_api {
             'contextid' => $contextid,
         ]);
 
-        // PARAM_ALPHANUMEXT permits hyphens but not a uuid shape, so check it.
-        if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', strtolower($fileid))) {
-            throw new \invalid_parameter_exception('fileid is not a uuid');
-        }
-        $fileid = strtolower($fileid);
+        $fileid = embed::clean_fileid($fileid);
 
-        // This is the check that matters: it throws unless the user can access
-        // the context the placeholder was rendered in.
+        // Two checks, and BOTH are needed. This one throws unless the user can
+        // access the context the placeholder was rendered in — it is what makes
+        // enrolment, groups, availability and hidden activities apply.
         $context = \context::instance_by_id($contextid);
         self::validate_context($context);
+
+        // ...and this one throws unless the VIDEO belongs here. Without it the
+        // check above only proves the caller reached a context of their own
+        // choosing: for the system context it reduces to require_login(), so any
+        // authenticated user could mint a link for any video in the account.
+        //
+        // It must run BEFORE the cache lookup below. The cache key is
+        // "<userid>_<fileid>" with no context in it, so one legitimate mint would
+        // otherwise seed a hit that is returned for every other context until the
+        // token expires.
+        if (!embed::is_authorised($fileid, $context)) {
+            // Only tell people who can act on it. A viewer who cannot publish here
+            // gets the ordinary "unavailable" message: repair instructions are
+            // useless to them, and pointing a student at a teacher to authorise a
+            // video the student chose is the confused-deputy route this whole
+            // check exists to close.
+            throw new \moodle_exception(
+                has_capability('filter/bunkercast:browselibrary', $context) ? 'notembeddedhere' : 'unavailable',
+                'filter_bunkercast'
+            );
+        }
 
         $cache = \cache::make('filter_bunkercast', 'playbackurl');
 

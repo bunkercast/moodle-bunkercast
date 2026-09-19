@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_bunkercast';
-$plugin->version   = 2026090200;
+$plugin->version   = 2026091900;
 $plugin->requires  = 2024100700;   // Moodle 4.5.
 $plugin->maturity  = MATURITY_BETA;
 $plugin->release   = '0.1.0';
@@ -34,5 +34,5 @@ $plugin->release   = '0.1.0';
 // authorising web service, the per-user cache and the player JS. This activity
 // is a course-level wrapper around it, so it cannot work alone.
 $plugin->dependencies = [
-    'filter_bunkercast' => 2026090200,
+    'filter_bunkercast' => 2026091900,
 ];

@@ -50,10 +50,24 @@ $string['cachedef_playbackurl'] = 'Minted playback URLs per viewer';
 $string['loading'] = 'Loading video…';
 $string['unavailable'] = 'This video is currently unavailable.';
 $string['notconfigured'] = 'Bunkercast is not configured. A site administrator needs to add an API key.';
+$string['notembeddedhere'] = 'This video has not been authorised for use here. A teacher can authorise it under Course administration, or insert it again with the Bunkercast button in the editor.';
+$string['cannotembedhere'] = 'Bunkercast videos can only be used inside a course or activity.';
 
 // Capability + picker.
-$string['bunkercast:browselibrary'] = 'Browse the Bunkercast video library';
+$string['bunkercast:browselibrary'] = 'Browse the Bunkercast library and use its videos in a course';
 $string['listfailed'] = 'Could not reach Bunkercast to list your videos. Check the API key in the filter settings.';
+
+// Authorising a video for a course.
+$string['authorisevideos'] = 'Authorise Bunkercast videos';
+$string['authoriseintro'] = 'A Bunkercast video plays in a course only after it has been authorised for that course. The Bunkercast button in the editor does this for you as you insert a video — use this page for a reference you typed or pasted by hand, or one that arrived with imported content.';
+$string['authorisewarning'] = 'Anyone who can see the page holding the video will be able to play it, and each play uses minutes from your Bunkercast balance.';
+$string['choosevideo'] = 'Video';
+$string['authorise'] = 'Authorise';
+$string['authorised'] = '{$a} can now be used in this course.';
+$string['authorisedvideos'] = 'Authorised in this course';
+$string['noneauthorised'] = 'No videos have been authorised in this course yet.';
+$string['colvideo'] = 'Video';
+$string['colwhen'] = 'Authorised';
 
 // Privacy.
 $string['privacy:metadata'] = 'The Bunkercast DRM video filter sends an opaque reference to the viewing user to Bunkercast so that a playback link can be issued for that person alone. No name, email address or other personal detail is transmitted.';
