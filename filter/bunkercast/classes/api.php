@@ -54,7 +54,7 @@ class api {
 
         $base = rtrim($cfg->playerbase ?: 'https://player.bunkercast.com', '/');
 
-        $ttl = (int)($cfg->ttlsec ?? 3600);
+        $ttl = (int)($cfg->ttlsec ?? 5400);
         $ttl = max(self::TTL_MIN, min(self::TTL_MAX, $ttl));
 
         $payload = [

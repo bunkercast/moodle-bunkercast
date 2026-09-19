@@ -47,7 +47,7 @@ if ($ADMIN->fulltree) {
         'filter_bunkercast/ttlsec',
         get_string('ttlsec', 'filter_bunkercast'),
         get_string('ttlsec_desc', 'filter_bunkercast'),
-        3600,
+        5400,
         PARAM_INT
     ));
 

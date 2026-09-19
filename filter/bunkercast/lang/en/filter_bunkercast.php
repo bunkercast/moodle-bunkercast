@@ -35,7 +35,9 @@ $string['playerbase'] = 'Player base URL';
 $string['playerbase_desc'] = 'Leave as the default unless Bunkercast have given you a different endpoint.';
 
 $string['ttlsec'] = 'Playback link lifetime (seconds)';
-$string['ttlsec_desc'] = 'How long each minted playback link stays valid, between 60 and 14400 (4 hours). A link is minted per viewer per video and cached for its lifetime, so a shorter value means more requests to Bunkercast and a longer one means a copied link keeps working for longer. One hour suits a typical lesson.';
+$string['ttlsec_desc'] = 'How long each playback link stays valid, between 60 and 14400 seconds (4 hours). The default of 5400 — 90 minutes — covers a normal lecture.
+<p><strong>On pay-as-you-go, size this to your longest video.</strong> Playback renews against the same link as it goes, so the link wants to stay valid for the length of the watch. If it runs out first the viewer reloads the page and carries on.</p>
+<p>On the Professional plan the whole video is licensed in one go, so this setting does not affect playback at all. It then only controls how long a link copied out of the page keeps working elsewhere, and you can safely lower it.</p>';
 
 $string['hostlock'] = 'Restrict playback to this site';
 $string['hostlock_desc'] = 'Ask Bunkercast to refuse playback unless the player is loaded from this Moodle site. This is stronger, but it relies on the browser sending a referrer — <strong>the Moodle mobile app usually does not</strong>, so enabling this can stop app users watching. Leave it off unless you have tested the app.';

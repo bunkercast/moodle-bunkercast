@@ -79,7 +79,9 @@ Nothing will play until you do this — not the activity either.
 
 - **API key** — paste the key from step 1. This is the only required setting.
 - **Player base URL** — leave alone unless Bunkercast gave you a different one.
-- **Playback link lifetime** — one hour suits a normal lesson. See below.
+- **Playback link lifetime** — 90 minutes by default, which covers a normal
+  lecture. If your videos run longer than that, see *Playback link lifetime*
+  below.
 - **Restrict playback to this site** — **leave off.** It is stronger, but it
   relies on the browser sending a referrer and the Moodle mobile app generally
   does not, so switching it on can stop app users watching.
@@ -180,9 +182,37 @@ is almost always the correct fit for a class or a cohort.
 > moment. Check your balance in Bunkercast before a class — a habit worth
 > forming while you are on pay-as-you-go.
 
-**Playback link lifetime** trades the same way: shorter means a copied link dies
-sooner, longer means fewer requests. One hour is a sensible default. It does not
-affect what you are billed — only watching does that.
+### Playback link lifetime
+
+Default **5400 seconds — 90 minutes**, which covers a normal lecture. It does not
+affect what you are billed; only watching does that. It does two things, and they
+pull in opposite directions.
+
+**Size it to your longest video — on pay-as-you-go.** Playback renews against the
+same link as it goes, so the link wants to stay valid for the length of the watch.
+If it runs out first the viewer reloads the page and carries on from there, so
+nothing is lost — but for two-hour lectures it is worth setting a value above two
+hours so the question never comes up.
+
+**On Professional, it does not affect playback at all.** That plan licenses the
+whole video in one go and never renews, so the link's lifetime stops mattering the
+moment playback starts. There it controls only the second thing:
+
+**It is how long a copied link keeps working.** A student who opens developer
+tools, or right-clicks the player and copies the video address, has a link they can
+send to someone outside the course. That link works until it expires — and no
+longer. The content stays DRM-protected either way, so it can be watched but not
+downloaded, and each link is tied to the viewer it was issued to. Plays through it
+do use your minutes.
+
+So: **on Professional, lower it** — nothing is lost and the window shrinks. **On
+pay-as-you-go, set it above your longest video** and accept that window, or turn on
+*Restrict playback to this site* (below) which closes it regardless — at the cost
+of the mobile app.
+
+The setting is site-wide: one value for every course, so it has to cover the
+longest video anyone watches in a single sitting. Values outside 60–14400 are
+clamped to that range.
 
 ---
 
