@@ -49,12 +49,12 @@ const load = async (node) => {
             args: {fileid, contextid},
         }])[0];
 
+        // Sizing lives entirely in styles.css: the container carries the aspect
+        // ratio and the width cap, and the iframe fills it. Setting a ratio here
+        // too would be a second source of truth that silently overrides it.
         const frame = document.createElement('iframe');
         frame.src = url;
-        frame.width = '100%';
         frame.title = fileid;
-        frame.style.border = '0';
-        frame.style.aspectRatio = '16 / 9';
         frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
         frame.setAttribute('allowfullscreen', '');
 
