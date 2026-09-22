@@ -92,14 +92,26 @@ Save. You are ready.
 
 ## 5. Add a video, three ways
 
+A video plays in a course only after it has been authorised for that course. The
+first two ways below do that for you as you pick the video, so you never have to
+think about it. The third is where you do it yourself.
+
+**One thing that applies to all three:** an authorisation belongs to one course.
+If you duplicate or import content holding a video reference into another course,
+authorise the video there too — see *By hand* below.
+
 ### As an activity — the usual choice
 
 In a course, turn editing on, then **Add an activity or resource → Bunkercast
 video**. Give it a name, choose your video from the dropdown, save.
 
+Choosing the video here also authorises it for the course, so there is nothing
+else to do.
+
 The video appears as its own item in the course, and Moodle can mark it complete
 once a student has viewed it (**Completion conditions → Student must view this
-activity**).
+activity**). Because it is an activity in its own right, hiding it or restricting
+it by group or date applies to the video itself.
 
 ### With the editor button — for a video inside other content
 
@@ -108,7 +120,12 @@ post, an assignment description — click the **Bunkercast** button on the toolb
 or **Insert → Bunkercast video**. Pick a video and it drops the reference in
 place.
 
+Picking the video here also authorises it for the course, so there is nothing else
+to do.
+
 Use this when the video belongs *within* something else, next to your own text.
+The video has no separate existence, so it inherits whatever restrictions apply to
+the page or forum holding it.
 
 ### By hand — no plugins beyond the filter
 
@@ -133,9 +150,10 @@ here and names the page above — you can do it then and reload. Authorising onc
 covers the whole course, so you only do it again for a video you have not used
 there before.
 
-**Copying content between courses.** An authorisation belongs to one course. If
-you duplicate or import a page that holds a reference, authorise the video in the
-destination course too.
+This is also the fix for content **copied or imported from another course**: the
+reference travels, the authorisation does not, so authorise the video once in the
+destination course. A restored *Bunkercast activity* is the exception — that one
+re-authorises itself.
 
 ---
 
