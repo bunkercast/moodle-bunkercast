@@ -9,9 +9,20 @@ video, talking to the Bunkercast API — lives in the filter. This activity reus
 filter's API client, web service, cache and JavaScript, and therefore ships no
 JavaScript of its own.
 
-Pick a video from your library when you add the activity. Viewers get a per-viewer,
-short-lived playback link, authorised against **this activity's** context, so group
-restrictions and availability conditions apply.
+Pick a video from your library when you add the activity. Viewers get a
+per-viewer, short-lived playback link.
+
+**The video is authorised for this activity alone** — not for the course around
+it. That is what makes hiding this activity, or restricting it by group or by
+date, actually withhold the video: a playback request has to name this activity,
+and naming it is what makes Moodle check whether it is visible to that viewer. A
+course-wide authorisation would be satisfied by anyone enrolled, asking from
+anywhere in the course.
+
+So adding the activity does not make the video usable elsewhere in the course. If
+you also want it in a page or a forum post, insert it there with the Bunkercast
+editor button, or authorise it for the course on the *Authorise Bunkercast videos*
+page.
 
 ## What you need
 

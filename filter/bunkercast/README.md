@@ -9,19 +9,56 @@ Plays DRM-protected Bunkercast videos inside Moodle. A reference like
 becomes a player anywhere Moodle formats text — a page, a label, an activity
 description, a forum post.
 
-**A video plays in a course only once it has been authorised for that course.**
+**A video plays somewhere only once it has been authorised for that place.**
 Inserting it with the Bunkercast button in the editor does that as it goes, and so
 does adding a Bunkercast activity, so most people never think about it.
 
-Two cases need it done by hand, on the *Authorise Bunkercast videos* page in that
-course — which needs the *Browse the Bunkercast library* capability, held by
-editing teachers and managers by default:
+## What an authorisation covers
+
+Authorisations are recorded per place, and how wide that place is depends on how
+the video got there:
+
+| How the video was added | Authorised for |
+|---|---|
+| **Bunkercast activity** | **that activity only** |
+| **Editor button** | wherever you were editing — the course when creating new content, the activity when editing an existing one |
+| **Authorise Bunkercast videos** page | the **whole course** |
+
+An authorisation for a course covers everything inside it. One for a single
+activity does **not** reach the course, nor any other activity.
+
+**The narrow case is deliberate and is a security property, not tidiness.** A
+playback request names the place it is asking from, and Moodle checks only as
+deeply as that name reaches: name an activity and it verifies the activity is
+visible to that viewer — hidden, availability dates, group restrictions — but name
+a course and it verifies enrolment and nothing more, because no activity was
+named. So a video authorised for a whole course can be played by anyone enrolled,
+wherever they ask from. Authorising an activity's video against the activity is
+what makes hiding or restricting that activity actually withhold the video.
+
+The course-wide grant made on the *Authorise Bunkercast videos* page is therefore
+exactly what it says: anyone who can see a page in that course holding the
+reference can play it.
+
+## When you have to authorise by hand
+
+On the *Authorise Bunkercast videos* page in that course, which needs the *Browse
+the Bunkercast library* capability — held by editing teachers and managers by
+default:
 
 - a reference **typed or pasted** into content, rather than inserted by the editor
   button;
 - content **copied or imported from another course**, because an authorisation
-  belongs to the course it was made in and does not travel with the content. A
-  restored *Bunkercast activity* is the exception — that one re-authorises itself.
+  belongs to the place it was made and does not travel with the content. A
+  restored *Bunkercast activity* is the exception — that one re-authorises itself,
+  against its own new activity.
+
+The page also lists what is currently authorised in the course, says whether each
+entry covers the whole course or one activity, and can withdraw any of them.
+Withdrawing stops the video playing through that authorisation immediately.
+
+Authorisations are removed automatically when the activity or course they were
+made for is deleted.
 
 That step is what stops a reference being pasted somewhere it was never meant to
 appear. Moodle alone cannot tell the difference: anyone who can write a forum post

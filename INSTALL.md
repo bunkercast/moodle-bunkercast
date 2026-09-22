@@ -92,26 +92,33 @@ Save. You are ready.
 
 ## 5. Add a video, three ways
 
-A video plays in a course only after it has been authorised for that course. The
+A video plays somewhere only after it has been authorised for that place. The
 first two ways below do that for you as you pick the video, so you never have to
 think about it. The third is where you do it yourself.
 
-**One thing that applies to all three:** an authorisation belongs to one course.
-If you duplicate or import content holding a video reference into another course,
-authorise the video there too — see *By hand* below.
+**How wide the authorisation is depends on the route:** an activity authorises the
+video for **that activity only**, the editor button authorises it for wherever you
+are editing, and the *Authorise Bunkercast videos* page authorises it for the
+**whole course**. The narrow one is deliberate — see *What an authorisation
+covers* below.
+
+**One thing that applies to all three:** an authorisation never travels with
+content. If you duplicate or import something holding a video reference into
+another course, authorise the video there too — see *By hand* below.
 
 ### As an activity — the usual choice
 
 In a course, turn editing on, then **Add an activity or resource → Bunkercast
 video**. Give it a name, choose your video from the dropdown, save.
 
-Choosing the video here also authorises it for the course, so there is nothing
-else to do.
+Choosing the video here also authorises it **for this activity**, so there is
+nothing else to do.
 
 The video appears as its own item in the course, and Moodle can mark it complete
 once a student has viewed it (**Completion conditions → Student must view this
-activity**). Because it is an activity in its own right, hiding it or restricting
-it by group or date applies to the video itself.
+activity**). Because the authorisation is for this activity rather than the course
+around it, hiding the activity or restricting it by group or date genuinely
+withholds the video — and it does not become usable elsewhere in the course.
 
 ### With the editor button — for a video inside other content
 
@@ -120,8 +127,9 @@ post, an assignment description — click the **Bunkercast** button on the toolb
 or **Insert → Bunkercast video**. Pick a video and it drops the reference in
 place.
 
-Picking the video here also authorises it for the course, so there is nothing else
-to do.
+Picking the video here also authorises it for wherever you are editing, so there
+is nothing else to do. Creating new content authorises it for the course; editing
+something that already exists authorises it for that activity.
 
 Use this when the video belongs *within* something else, next to your own text.
 The video has no separate existence, so it inherits whatever restrictions apply to
@@ -146,14 +154,42 @@ The id comes from **Bunkercast → Studio**. This is the fallback if you only
 installed the filter.
 
 If you skip step 1, the player says the video has not been authorised for use
-here and names the page above — you can do it then and reload. Authorising once
-covers the whole course, so you only do it again for a video you have not used
-there before.
+here and names the page above — you can do it then and reload. Authorising this
+way covers the whole course, so you only do it again for a video you have not used
+in that course before.
 
 This is also the fix for content **copied or imported from another course**: the
 reference travels, the authorisation does not, so authorise the video once in the
 destination course. A restored *Bunkercast activity* is the exception — that one
-re-authorises itself.
+re-authorises itself, against its own new activity.
+
+### What an authorisation covers
+
+| How the video was added | Authorised for |
+|---|---|
+| Bunkercast activity | **that activity only** |
+| Editor button | wherever you were editing — the course when creating, the activity when editing an existing one |
+| *Authorise Bunkercast videos* page | the **whole course** |
+
+A course authorisation covers everything inside it. One for a single activity does
+not reach the course, nor any other activity.
+
+**Why the narrow one matters.** A playback request says where it is asking from,
+and Moodle checks only as deeply as that reaches: name an activity and it checks
+whether that activity is visible to the viewer — hidden, dates, groups — but name
+a course and it checks enrolment and nothing more, because no activity was named.
+So a video authorised for a whole course can be played by anyone enrolled, asking
+from anywhere in it. Authorising an activity's video against the activity is what
+makes hiding or restricting that activity actually withhold the video.
+
+That is also the honest reading of the course-wide grant on the *Authorise
+Bunkercast videos* page: it means anyone who can see a page in that course holding
+the reference can play the video.
+
+The page lists what is authorised in the course, says whether each entry covers
+the whole course or one activity, and can withdraw any of them — which stops
+playback through that authorisation immediately. Authorisations are removed
+automatically when the activity or course they were made for is deleted.
 
 ---
 

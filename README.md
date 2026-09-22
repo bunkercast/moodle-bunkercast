@@ -45,13 +45,38 @@ The same choice rules out the tempting alternative of pasting a long-lived embed
 code into the content. That leaves a permanent, forwardable token in the page,
 visible in view-source, unaffected by anyone losing access.
 
-## Access control comes from Moodle
+## Access control comes from Moodle — plus one thing it cannot know
 
 `classes/external/get_playback_url.php` calls `self::validate_context()` before
 minting. By the time Moodle renders a page it has already decided about
 enrolment, groups, availability conditions and prerequisites — so that one call
 inherits all of it. Unenrol a student and the next mint simply does not happen;
 there is no revocation step to remember.
+
+That check answers *may this viewer be in this place*. It cannot answer *does this
+video belong in this place*, because a placeholder is just text and anyone who can
+write a forum post could paste one. So there is a second check, against a row in
+`filter_bunkercast_embed` written only by a deliberate act of someone holding
+`filter/bunkercast:browselibrary` — the editor picker, the activity form, or the
+per-course authorise page. Never by rendering: filters run over text that students
+author, and a blog entry renders at the **system** context.
+
+**The two checks are coupled through the context, which is why the row's level
+matters.** A request names where it is asking from, and `validate_context()`
+checks only as deeply as that name reaches — given a module it verifies
+`$cm->uservisible` (hidden, dates, groups); given a course it verifies enrolment
+and stops, because no activity was named. So an authorisation stored against a
+course is satisfied by anyone enrolled, asking from anywhere in it.
+
+`classes/embed.php` holds the whole rule. Activities authorise against their own
+module context, so hiding or restricting an activity genuinely withholds its
+video; the authorise page grants course-wide, which is an explicit human decision
+and means what it says. Nothing above a course may hold a row at all — not system,
+category, user, nor the front-page course, which is reachable by every
+authenticated user. Moodle does **not** enforce a capability's declared
+`contextlevel` (`has_capability()` never reads it), so that rule is enforced here.
+
+Rows are removed when their course or activity is deleted (`classes/observer.php`).
 
 ## Caching is not optional
 
