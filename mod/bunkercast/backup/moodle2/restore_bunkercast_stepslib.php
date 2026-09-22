@@ -62,24 +62,45 @@ class restore_bunkercast_activity_structure_step extends restore_activity_struct
         // between sites.
         $newitemid = $DB->insert_record('bunkercast', $data);
 
-        // Restore and course import both reach this method and neither calls
-        // bunkercast_add_instance(), so the video would arrive unauthorised in the
-        // destination course and refuse to play. grant() skips the filter
-        // capability check on purpose: the restoring user holds moodle/restore:*,
-        // not necessarily filter/bunkercast:browselibrary, and failing half way
-        // through a restore is a far worse outcome than authorising a video whose
-        // activity is being restored regardless.
-        \filter_bunkercast\embed::grant($data->fileid, context_course::instance($data->course));
-
         $this->apply_activity_instance($newitemid);
     }
 
     /**
-     * Reattaches files embedded in the activity description.
+     * Reattaches embedded files, and authorises the video for the restored activity.
      *
      * @return void
      */
     protected function after_execute() {
+        global $DB;
+
         $this->add_related_files('mod_bunkercast', 'intro', null);
+
+        // Restore and course import both bypass bunkercast_add_instance(), so
+        // without this the video arrives unauthorised and refuses to play.
+        //
+        // It happens here rather than in process_bunkercast() because the module
+        // context does not exist until apply_activity_instance() has run, and the
+        // authorisation belongs against the activity: stored against the course it
+        // would be matched by any request naming the course, and the restrictions
+        // on this activity would never be checked.
+        //
+        // grant() skips the filter capability check deliberately — the restoring
+        // user holds moodle/restore:*, not necessarily
+        // filter/bunkercast:browselibrary.
+        $fileid = $DB->get_field('bunkercast', 'fileid', ['id' => $this->task->get_activityid()]);
+        if (!$fileid) {
+            return;
+        }
+
+        try {
+            \filter_bunkercast\embed::grant($fileid, \context::instance_by_id($this->task->get_contextid()));
+        } catch (\moodle_exception $e) {
+            // Never abort a restore over this. A malformed file id in an old or
+            // hand-crafted backup, or a target where a video cannot be authorised,
+            // leaves the activity restored and the video refusing to play — which
+            // is the correct way for it to fail, and repairable from the course's
+            // authorise page.
+            debugging('filter_bunkercast: could not authorise restored video: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
     }
 }

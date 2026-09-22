@@ -60,7 +60,14 @@ class embed {
      */
     public static function course_context_for(\context $context): ?\context {
         $coursecontext = $context->get_course_context(false);
-        if (!$coursecontext || $coursecontext->instanceid == SITEID) {
+
+        // Cast both sides. context::__construct() casts contextlevel to int but
+        // NOT instanceid, so a context loaded from the database carries it as a
+        // string while one built in memory carries an int. Comparing them without
+        // the casts would let the front-page course through as a place an
+        // authorisation may live — and the front page is reachable by every
+        // authenticated user, which is the hole this class exists to close.
+        if (!$coursecontext || (int) $coursecontext->instanceid === (int) SITEID) {
             return null;
         }
         return $coursecontext;
@@ -139,6 +146,15 @@ class embed {
         try {
             $DB->insert_record(self::TABLE, (object) ($key + ['timecreated' => time()]));
         } catch (\dml_exception $e) {
+            // Inside a transaction there is no recovering. PostgreSQL aborts the
+            // whole transaction on a failed statement, so the re-check below would
+            // itself throw a second, unrelated error. bunkercast_add_instance()
+            // runs inside course/modlib.php's delegated transaction, so this
+            // branch is reachable in normal use.
+            if ($DB->is_transaction_started()) {
+                throw $e;
+            }
+
             // A concurrent request may have won the unique index between the check
             // and the insert. Re-check rather than swallow: if the row still is not
             // there the failure was something else (disk full, lost connection) and
@@ -194,9 +210,17 @@ class embed {
 
         $fileid = self::clean_fileid($fileid);
 
-        $candidates = [$context->id];
+        // Only consider the request context itself if it is somewhere an
+        // authorisation could legitimately have been stored. Rows are only ever
+        // written through may_host(), so this re-states the write rule on the read
+        // side: an orphaned or hand-inserted row at a system, category or user
+        // context can then never match, whatever put it there.
+        $candidates = self::may_host($context) ? [$context->id] : [];
         if ($coursecontext = self::course_context_for($context)) {
             $candidates[] = $coursecontext->id;
+        }
+        if (!$candidates) {
+            return false;
         }
 
         [$insql, $params] = $DB->get_in_or_equal(array_unique($candidates), SQL_PARAMS_NAMED, 'ctx');

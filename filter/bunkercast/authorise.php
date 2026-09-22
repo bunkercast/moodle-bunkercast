@@ -88,21 +88,40 @@ if ($remove !== '') {
     require_sesskey();
     $removename = s($names[strtolower($remove)] ?? $remove);
 
-    // Confirm first. Unlike authorising, this takes something away: every
-    // reference to the video in this course stops playing the moment it is gone.
+    // An authorisation may live against this course or against an activity inside
+    // it — adding a Bunkercast activity stores one against the activity, so that
+    // hiding or restricting the activity still withholds the video. Whichever the
+    // caller names must be within this course, or a teacher here could revoke
+    // somewhere they have no business.
+    $removectx = \context::instance_by_id(required_param('ctx', PARAM_INT), IGNORE_MISSING);
+    if (
+        !$removectx ||
+            ($removectx->id != $coursecontext->id &&
+             strpos($removectx->path, $coursecontext->path . '/') !== 0)
+    ) {
+        throw new moodle_exception('cannotembedhere', 'filter_bunkercast');
+    }
+
+    // Confirm first. Unlike authorising, this takes something away: references to
+    // the video stop playing the moment it is gone.
     if (!optional_param('confirm', 0, PARAM_BOOL)) {
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string('authorisevideos', 'filter_bunkercast'));
         echo $OUTPUT->confirm(
             get_string('removeconfirm', 'filter_bunkercast', $removename),
-            new moodle_url($pageurl, ['remove' => $remove, 'confirm' => 1, 'sesskey' => sesskey()]),
+            new moodle_url($pageurl, [
+                'remove'  => $remove,
+                'ctx'     => $removectx->id,
+                'confirm' => 1,
+                'sesskey' => sesskey(),
+            ]),
             $pageurl
         );
         echo $OUTPUT->footer();
         exit;
     }
 
-    embed::revoke($remove, $coursecontext);
+    embed::revoke($remove, $removectx);
     redirect(
         $pageurl,
         get_string('removed', 'filter_bunkercast', $removename),
@@ -111,11 +130,30 @@ if ($remove !== '') {
     );
 }
 
-// Course-context authorisations only: this page manages the course-wide grant,
-// which already covers every activity inside it. get_records() keys by id, so
-// build the file-id set separately.
-$authorised = $DB->get_records(embed::TABLE, ['contextid' => $coursecontext->id], 'timecreated DESC');
-$authorisedids = array_flip(array_column($authorised, 'fileid'));
+// Everything authorised for this course OR for an activity inside it. Joining the
+// context table both gives us the label for each row and silently drops rows whose
+// context has since been deleted, which can no longer authorise anything anyway.
+$like = $DB->sql_like('ctx.path', ':path');
+$authorised = $DB->get_records_sql(
+    "
+        SELECT e.id, e.fileid, e.contextid, e.timecreated, ctx.contextlevel, ctx.instanceid
+          FROM {" . embed::TABLE . "} e
+          JOIN {context} ctx ON ctx.id = e.contextid
+         WHERE e.contextid = :coursectx OR $like
+      ORDER BY e.timecreated DESC",
+    ['coursectx' => $coursecontext->id, 'path' => $coursecontext->path . '/%']
+);
+
+// Only a course-wide row makes the "authorise for the course" action redundant; a
+// video authorised for one activity can still legitimately be authorised course-wide.
+$coursewide = [];
+foreach ($authorised as $row) {
+    if ($row->contextid == $coursecontext->id) {
+        $coursewide[$row->fileid] = true;
+    }
+}
+
+$cms = get_fast_modinfo($course)->get_cms();
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('authorisevideos', 'filter_bunkercast'));
@@ -131,7 +169,7 @@ if ($listfailed) {
     // uploaded to Bunkercast.
     $options = [];
     foreach ($videos as $video) {
-        if (!isset($authorisedids[$video['fileid']])) {
+        if (!isset($coursewide[$video['fileid']])) {
             $options[$video['fileid']] = s($video['name']);
         }
     }
@@ -161,18 +199,31 @@ if (!$authorised) {
     $table = new html_table();
     $table->head = [
         get_string('colvideo', 'filter_bunkercast'),
+        get_string('colwhere', 'filter_bunkercast'),
         get_string('colwhen', 'filter_bunkercast'),
         get_string('colaction', 'filter_bunkercast'),
     ];
     foreach ($authorised as $row) {
+        // An activity-scoped row names the activity; anything else here is the
+        // course context itself. A cm that has since gone takes its context with
+        // it, so the join above has already dropped those rows.
+        $where = ($row->contextlevel == CONTEXT_MODULE && isset($cms[$row->instanceid]))
+            ? format_string($cms[$row->instanceid]->name)
+            : get_string('wholecourse', 'filter_bunkercast');
+
         // A video deleted from Bunkercast, or one the API could not be asked
         // about, still has a row here. Show the id rather than an empty cell —
         // and it is precisely the row most worth being able to remove.
         $table->data[] = [
             s($names[$row->fileid] ?? $row->fileid),
+            $where,
             userdate($row->timecreated, get_string('strftimedatetimeshort')),
             html_writer::link(
-                new moodle_url($pageurl, ['remove' => $row->fileid, 'sesskey' => sesskey()]),
+                new moodle_url($pageurl, [
+                    'remove'  => $row->fileid,
+                    'ctx'     => $row->contextid,
+                    'sesskey' => sesskey(),
+                ]),
                 get_string('remove', 'filter_bunkercast')
             ),
         ];

@@ -60,10 +60,15 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
 $PAGE->set_activity_record($instance);
 
-// The same container the filter emits, and the same AMD module. No credential
-// is placed in this HTML: player.js fetches a per-viewer URL through
-// filter_bunkercast's web service, which authorises against THIS module's
-// context — so group restrictions and availability conditions apply too.
+// The same container the filter emits, and the same AMD module. No credential is
+// placed in this HTML: player.js fetches a per-viewer URL through
+// filter_bunkercast's web service, passing the context id emitted below.
+//
+// That context is this module's, and the video is authorised against this module
+// too (bunkercast_authorise_video in lib.php), which is what makes hiding this
+// activity or restricting it by group or date actually withhold the video. Do not
+// "simplify" either side to the course context: a request naming a course is only
+// checked for enrolment, because no activity is named for Moodle to check.
 $PAGE->requires->js_call_amd('filter_bunkercast/player', 'init');
 
 echo $OUTPUT->header();

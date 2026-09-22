@@ -194,29 +194,76 @@ final class embed_test extends \advanced_testcase {
     }
 
     /**
-     * Creating a Bunkercast activity authorises its video for the course.
+     * Creating an activity authorises its video for THAT ACTIVITY, not the course.
      *
-     * Without this the activity saves and then refuses to play.
+     * This pins a real hole. A playback request names the context it is asking
+     * from, and Moodle checks only as deeply as that name reaches: name an
+     * activity and it verifies the activity is visible to the viewer — hidden,
+     * availability dates, groups — but name a course and it verifies enrolment and
+     * nothing more, because no activity was named. So a course-level row would be
+     * matched by a request naming the course, and every restriction on the activity
+     * holding the video would go unchecked. An earlier version did exactly that
+     * while its comments claimed otherwise.
      */
-    public function test_creating_an_activity_authorises_its_video(): void {
+    public function test_creating_an_activity_authorises_only_that_activity(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = \context_course::instance($course->id);
 
-        $this->assertFalse(embed::is_authorised(self::FILEID, $coursecontext));
-
-        require_once(__DIR__ . '/../../../mod/bunkercast/lib.php');
-        bunkercast_add_instance((object) [
-            'course'        => $course->id,
-            'name'          => 'Lecture one',
-            'intro'         => '',
-            'introformat'   => FORMAT_HTML,
-            'fileid'        => self::FILEID,
+        $activity = $this->getDataGenerator()->create_module('bunkercast', [
+            'course' => $course->id,
+            'fileid' => self::FILEID,
         ]);
 
-        $this->assertTrue(embed::is_authorised(self::FILEID, $coursecontext));
+        // It plays where it was put.
+        $this->assertTrue(embed::is_authorised(self::FILEID, \context_module::instance($activity->cmid)));
+
+        // A request naming the COURSE gets nothing — the bypass this closes.
+        $this->assertFalse(embed::is_authorised(self::FILEID, $coursecontext));
+
+        // And it does not leak sideways to another activity in the same course.
+        $other = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $this->assertFalse(embed::is_authorised(self::FILEID, \context_module::instance($other->cmid)));
+    }
+
+    /**
+     * grant() skips the filter capability on purpose, and that is worth pinning.
+     *
+     * Its callers — creating an activity, and restore — have already had Moodle
+     * enforce mod/bunkercast:addinstance or moodle/restore:*, and failing there on
+     * a filter capability would block a save or abort a restore. The consequence is
+     * that the effective right to authorise a video is browselibrary OR addinstance
+     * OR the restore capabilities, not browselibrary alone. If that ever stops being
+     * deliberate, this test should fail and force the decision to be retaken.
+     */
+    public function test_grant_deliberately_skips_the_filter_capability(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $activity = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $modulecontext = \context_module::instance($activity->cmid);
+
+        // A plain student, who cannot browse the library anywhere.
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->setUser($student);
+
+        $this->assertFalse(has_capability('filter/bunkercast:browselibrary', $modulecontext));
+
+        // Refused by register(), which does check the capability...
+        try {
+            embed::register(self::FILEID, $modulecontext);
+            $this->fail('register() must require the capability');
+        } catch (\required_capability_exception $e) {
+            $this->assertFalse(embed::is_authorised(self::FILEID, $modulecontext));
+        }
+
+        // ...while grant() does not check it. Nothing a student can reach calls
+        // grant() directly; this documents the asymmetry rather than blessing it.
+        embed::grant(self::FILEID, $modulecontext);
+        $this->assertTrue(embed::is_authorised(self::FILEID, $modulecontext));
     }
 
     /**
