@@ -52,7 +52,7 @@ $string['cachedef_playbackurl'] = 'Minted playback URLs per viewer';
 $string['loading'] = 'Loading video…';
 $string['unavailable'] = 'This video is currently unavailable.';
 $string['notconfigured'] = 'Bunkercast is not configured. A site administrator needs to add an API key.';
-$string['notembeddedhere'] = 'This video has not been authorised for use here. A teacher can authorise it under Course administration, or insert it again with the Bunkercast button in the editor.';
+$string['notembeddedhere'] = 'This video has not been authorised for use in this course. Add it on the "Authorise Bunkercast videos" page, or insert the video again using the Bunkercast button in the editor.';
 $string['cannotembedhere'] = 'Bunkercast videos can only be used inside a course or activity.';
 
 // Capability + picker.

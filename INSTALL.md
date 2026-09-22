@@ -116,8 +116,9 @@ Two steps, because a video plays in a course only after it has been authorised
 for that course. The editor button and the activity do this for you; by hand you
 do it yourself.
 
-1. In the course, go to **Course administration → Authorise Bunkercast videos**,
-   pick the video by name, and press **Authorise**.
+1. In the course, open **Authorise Bunkercast videos** from the course menu, pick
+   the video by name, and press **Authorise**. You need the *Browse the Bunkercast
+   library* capability, which editing teachers and managers have by default.
 2. Type the reference wherever you want it, anywhere the editor works:
 
    ```

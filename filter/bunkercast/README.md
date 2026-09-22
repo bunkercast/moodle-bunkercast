@@ -12,8 +12,9 @@ description, a forum post.
 **A video plays in a course only once it has been authorised for that course.**
 Inserting it with the Bunkercast button in the editor does that as it goes, and so
 does adding a Bunkercast activity, so most people never think about it. For a
-reference typed or pasted by hand, a teacher authorises the video once under
-*Course administration → Authorise Bunkercast videos*.
+reference typed or pasted by hand, it is authorised once on the *Authorise
+Bunkercast videos* page in that course — which needs the *Browse the Bunkercast
+library* capability, held by editing teachers and managers by default.
 
 That step is what stops a reference being pasted somewhere it was never meant to
 appear. Moodle alone cannot tell the difference: anyone who can write a forum post
