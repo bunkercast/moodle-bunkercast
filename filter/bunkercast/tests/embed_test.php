@@ -308,6 +308,38 @@ final class embed_test extends \advanced_testcase {
     }
 
     /**
+     * Deleting an activity or a course takes its authorisations with it.
+     *
+     * Two different mechanisms, because Moodle deletes them differently: an
+     * activity deleted on its own fires course_module_deleted, while a course
+     * deletion removes each module's context directly without firing it, so the
+     * course observer has to sweep by absence instead.
+     */
+    public function test_authorisations_do_not_outlive_their_context(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = \context_course::instance($course->id);
+        $activity = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $modulecontext = \context_module::instance($activity->cmid);
+
+        embed::grant(self::FILEID, $coursecontext);
+        embed::grant(self::FILEID, $modulecontext);
+        $this->assertSame(2, $DB->count_records(embed::TABLE));
+
+        // Deleting the activity takes its row, and leaves the course's alone.
+        course_delete_module($activity->cmid);
+        $this->assertSame(1, $DB->count_records(embed::TABLE));
+        $this->assertSame(1, $DB->count_records(embed::TABLE, ['contextid' => $coursecontext->id]));
+
+        // Deleting the course takes the rest.
+        delete_course($course, false);
+        $this->assertSame(0, $DB->count_records(embed::TABLE));
+    }
+
+    /**
      * A malformed file id is refused wherever it arrives.
      */
     public function test_a_malformed_fileid_is_refused(): void {

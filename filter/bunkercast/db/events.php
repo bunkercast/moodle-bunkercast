@@ -15,11 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Bunkercast DRM video filter for Moodle.
- *
- * Turns a [bunkercast:<file-id>] placeholder in any Moodle content into a
- * DRM-protected player, with the playback credential minted per viewer at
- * request time rather than stored in the content.
+ * Event observers for filter_bunkercast.
  *
  * @package    filter_bunkercast
  * @copyright  2026 Bunkercast
@@ -28,13 +24,17 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'filter_bunkercast';
-$plugin->version   = 2026092200;
+$observers = [
+    // Deleting an activity takes its context with it, orphaning any authorisation
+    // stored against that activity.
+    [
+        'eventname' => '\core\event\course_module_deleted',
+        'callback'  => '\filter_bunkercast\observer::course_module_deleted',
+    ],
 
-// Moodle 4.5. That is where filter classes moved to classes/text_filter.php;
-// on 4.1-4.4 the class must live in filter.php instead. Supporting those needs
-// a class_alias shim in the old location — see README.
-$plugin->requires  = 2024100700;
-
-$plugin->maturity  = MATURITY_BETA;
-$plugin->release   = '0.1.0';
+    // Deleting a course orphans its own row and every activity row beneath it.
+    [
+        'eventname' => '\core\event\course_deleted',
+        'callback'  => '\filter_bunkercast\observer::course_deleted',
+    ],
+];
