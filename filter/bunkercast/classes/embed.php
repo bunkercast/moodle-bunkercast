@@ -150,6 +150,30 @@ class embed {
     }
 
     /**
+     * Withdraw an authorisation.
+     *
+     * Destructive in a way granting is not: anything in the course already using
+     * the video stops playing, and says so. Deliberately does NOT check may_host()
+     * — a row that should not be there is exactly the one worth being able to
+     * delete — but does require the same capability as granting, so the ability to
+     * authorise and the ability to withdraw stay together.
+     *
+     * @param string $fileid Bunkercast file id (uuid).
+     * @param \context $context The context the authorisation is stored against.
+     * @return void
+     * @throws \invalid_parameter_exception If the file id is not a uuid.
+     * @throws \required_capability_exception If the user may not publish here.
+     */
+    public static function revoke(string $fileid, \context $context): void {
+        global $DB;
+
+        $fileid = self::clean_fileid($fileid);
+        require_capability('filter/bunkercast:browselibrary', $context);
+
+        $DB->delete_records(self::TABLE, ['contextid' => $context->id, 'fileid' => $fileid]);
+    }
+
+    /**
      * Whether a video may play in this context.
      *
      * Matches an authorisation stored against the context itself, or against the

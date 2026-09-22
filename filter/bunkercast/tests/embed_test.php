@@ -220,6 +220,47 @@ final class embed_test extends \advanced_testcase {
     }
 
     /**
+     * An authorisation can be withdrawn, and withdrawing needs the capability.
+     *
+     * Granting without a way to withdraw is half a control: the authorisation is
+     * what permits playback, so there has to be a way to take it back.
+     */
+    public function test_an_authorisation_can_be_withdrawn(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = \context_course::instance($course->id);
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+
+        $this->setUser($teacher);
+        embed::register(self::FILEID, $coursecontext);
+        $this->assertTrue(embed::is_authorised(self::FILEID, $coursecontext));
+
+        // A student may not undo it.
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->setUser($student);
+        try {
+            embed::revoke(self::FILEID, $coursecontext);
+            $this->fail('A student must not be able to withdraw an authorisation');
+        } catch (\required_capability_exception $e) {
+            $this->assertTrue(embed::is_authorised(self::FILEID, $coursecontext));
+        }
+
+        // The teacher may, and it stops playing everywhere in the course.
+        $this->setUser($teacher);
+        $activity = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        embed::revoke(self::FILEID, $coursecontext);
+
+        $this->assertFalse(embed::is_authorised(self::FILEID, $coursecontext));
+        $this->assertFalse(embed::is_authorised(self::FILEID, \context_module::instance($activity->cmid)));
+
+        // Withdrawing something that was never authorised is not an error.
+        embed::revoke(self::FILEID, $coursecontext);
+    }
+
+    /**
      * A malformed file id is refused wherever it arrives.
      */
     public function test_a_malformed_fileid_is_refused(): void {

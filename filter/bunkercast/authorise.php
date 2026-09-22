@@ -83,6 +83,34 @@ if ($fileid !== '') {
     );
 }
 
+$remove = optional_param('remove', '', PARAM_ALPHANUMEXT);
+if ($remove !== '') {
+    require_sesskey();
+    $removename = s($names[strtolower($remove)] ?? $remove);
+
+    // Confirm first. Unlike authorising, this takes something away: every
+    // reference to the video in this course stops playing the moment it is gone.
+    if (!optional_param('confirm', 0, PARAM_BOOL)) {
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading(get_string('authorisevideos', 'filter_bunkercast'));
+        echo $OUTPUT->confirm(
+            get_string('removeconfirm', 'filter_bunkercast', $removename),
+            new moodle_url($pageurl, ['remove' => $remove, 'confirm' => 1, 'sesskey' => sesskey()]),
+            $pageurl
+        );
+        echo $OUTPUT->footer();
+        exit;
+    }
+
+    embed::revoke($remove, $coursecontext);
+    redirect(
+        $pageurl,
+        get_string('removed', 'filter_bunkercast', $removename),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
+}
+
 // Course-context authorisations only: this page manages the course-wide grant,
 // which already covers every activity inside it. get_records() keys by id, so
 // build the file-id set separately.
@@ -109,7 +137,6 @@ if ($listfailed) {
     }
 
     if ($options) {
-        echo $OUTPUT->notification(get_string('authorisewarning', 'filter_bunkercast'), 'notifywarning');
         echo html_writer::start_tag('form', ['method' => 'post', 'action' => $pageurl->out(false)]);
         echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
         echo html_writer::div(
@@ -135,13 +162,19 @@ if (!$authorised) {
     $table->head = [
         get_string('colvideo', 'filter_bunkercast'),
         get_string('colwhen', 'filter_bunkercast'),
+        get_string('colaction', 'filter_bunkercast'),
     ];
     foreach ($authorised as $row) {
         // A video deleted from Bunkercast, or one the API could not be asked
-        // about, still has a row here. Show the id rather than an empty cell.
+        // about, still has a row here. Show the id rather than an empty cell —
+        // and it is precisely the row most worth being able to remove.
         $table->data[] = [
             s($names[$row->fileid] ?? $row->fileid),
-            userdate($row->timecreated),
+            userdate($row->timecreated, get_string('strftimedatetimeshort')),
+            html_writer::link(
+                new moodle_url($pageurl, ['remove' => $row->fileid, 'sesskey' => sesskey()]),
+                get_string('remove', 'filter_bunkercast')
+            ),
         ];
     }
     echo html_writer::table($table);
