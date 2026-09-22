@@ -68,7 +68,11 @@ foreach ($videos as $video) {
 }
 
 $fileid = optional_param('fileid', '', PARAM_ALPHANUMEXT);
-if ($fileid !== '' && confirm_sesskey()) {
+if ($fileid !== '') {
+    // Note require_sesskey() rather than confirm_sesskey(): the latter returns
+    // false for a wrong key, which would silently render the page again as though
+    // the button had not been pressed.
+    require_sesskey();
     // Every check that decides whether this is allowed lives in embed::register().
     embed::register($fileid, $coursecontext);
     redirect(
@@ -94,10 +98,13 @@ if ($listfailed) {
 } else {
     // Already-authorised videos are dropped from the select: re-authorising is a
     // harmless no-op, but offering it invites the reader to think it does something.
+    // Escape here: html_writer::select() passes option labels to html_writer::tag()
+    // unescaped, and a video name is whatever the file was called when it was
+    // uploaded to Bunkercast.
     $options = [];
     foreach ($videos as $video) {
         if (!isset($authorisedids[$video['fileid']])) {
-            $options[$video['fileid']] = $video['name'];
+            $options[$video['fileid']] = s($video['name']);
         }
     }
 

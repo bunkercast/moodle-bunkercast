@@ -1,13 +1,23 @@
 # Bunkercast DRM video (filter_bunkercast)
 
-Plays DRM-protected Bunkercast videos inside Moodle. Write a reference like
+Plays DRM-protected Bunkercast videos inside Moodle. A reference like
 
 ```
 [bunkercast:36bb40db-1a39-480f-8148-4346a76388fd]
 ```
 
-anywhere Moodle formats text — a page, a label, an activity description, a forum
-post — and this filter turns it into a player.
+becomes a player anywhere Moodle formats text — a page, a label, an activity
+description, a forum post.
+
+**A video plays in a course only once it has been authorised for that course.**
+Inserting it with the Bunkercast button in the editor does that as it goes, and so
+does adding a Bunkercast activity, so most people never think about it. For a
+reference typed or pasted by hand, a teacher authorises the video once under
+*Course administration → Authorise Bunkercast videos*.
+
+That step is what stops a reference being pasted somewhere it was never meant to
+appear. Moodle alone cannot tell the difference: anyone who can write a forum post
+could otherwise paste any video id from the library and have it play.
 
 Each viewer gets their own short-lived playback link, minted server-side when they
 open the page. No playback credential is ever written into the page HTML, because

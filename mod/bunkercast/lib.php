@@ -66,11 +66,14 @@ function bunkercast_add_instance($data, $mform = null) {
     $data->timecreated = time();
     $data->timemodified = $data->timecreated;
 
-    $id = $DB->insert_record('bunkercast', $data);
-
+    // Before the insert, and before the update in the sibling below, so that a
+    // refusal leaves nothing half-created. It can refuse: the front-page course
+    // is not somewhere a Bunkercast video can be authorised, so adding this
+    // activity there fails with cannotembedhere rather than saving an activity
+    // that could never play.
     bunkercast_authorise_video($data);
 
-    return $id;
+    return $DB->insert_record('bunkercast', $data);
 }
 
 /**
